@@ -1,1 +1,318 @@
 
+-- LAB 09
+--
+-- Exercise 1
+---------------------------------------------------------------------
+
+---------------------------------------------------------------------
+-- Task 1
+-- 
+-- Open the project file F:\10774A_Labs\10774A_09_PRJ\10774A_09_PRJ.ssmssln and the T-SQL script 51 - Lab Exercise 1.sql. To set your database context to that of the TSQL2012 database, highlight the statement USE TSQL2012; and execute the highlighted code. After executing this statement, the database name TSQL2012 should be selected in the Available Databases box. In subsequent exercises, you will simply be instructed to ensure that you are connected to the TSQL2012 database.
+--
+-- Write a SELECT statement that will return groups of customers that made a purchase. The SELECT clause should include the custid column from the Sales.Orders table and the contactname column from the Sales.Customers table. Group by both columns and filter only the orders from the sales employee whose empid equals five.
+--
+-- Execute the written statement and compare the results that you got with the desired results shown in the file 52 - Lab Exercise 1 - Task 1 Result.txt.
+---------------------------------------------------------------------
+select c.custid,c.contactname
+from Sales.Customers c
+inner join Sales.Orders o
+on c.custid = o.custid
+where o.empid = 5
+group by c.custid,c.contactname
+
+
+---------------------------------------------------------------------
+-- Task 2
+-- 
+-- Copy the T-SQL statement in task 1 and modify it to include the city column from the Sales.Customers table in the SELECT clause. 
+--
+-- Execute the query. You will get an error. What is the error message? Why?
+--
+-- Correct the query so that it will execute properly.
+--
+-- Execute the query and compare the results that you got with the desired results shown in the file 53 - Lab Exercise 1 - Task 2 Result.txt.
+---------------------------------------------------------------------
+select c.custid,c.contactname,c.city
+from Sales.Customers c
+inner join Sales.Orders o
+on c.custid = o.custid
+where o.empid = 5
+group by c.custid,c.contactname,c.city
+-- correct
+
+
+---------------------------------------------------------------------
+-- Task 3
+-- 
+-- Write a SELECT statement that will return groups of rows based on the custid column and a calculated column orderyear representing the order year based on the orderdate column from the Sales.Orders table. Filter the results to include only the orders from the sales employee whose empid equal five.
+--
+-- Execute the written statement and compare the results that you got with the desired results shown in the file 54 - Lab Exercise 1 - Task 3 Result.txt.
+---------------------------------------------------------------------
+SELECT
+ custid, YEAR(orderdate) AS orderyear
+FROM Sales.Orders
+WHERE empid = 5
+GROUP BY custid, YEAR(orderdate)
+ORDER BY custid, orderyear;
+
+
+---------------------------------------------------------------------
+-- Task 4
+-- 
+-- Write a SELECT statement to retrieve groups of rows based on the categoryname column in the Production.Categories table. Filter the results to include only the product categories that were ordered in the year 2008.
+--
+-- Execute the written statement and compare the results that you got with the desired results shown in the file 55 - Lab Exercise 1 - Task 4 Result.txt. 
+---------------------------------------------------------------------
+Select
+c.categoryid,c.categoryname
+from Production.Categories c
+inner join Sales.Orders o
+on o.orderid = o.orderid
+where YEAR(o.orderdate) = '2008'
+group by c.categoryname,c.categoryid 
+
+-- LAB 09
+--
+-- Exercise 2
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+-- Task 1
+-- 
+-- Open the project file F:\10774A_Labs\10774A_09_PRJ\10774A_09_PRJ.ssmssln and the T-SQL script 61 - Lab Exercise 2.sql. Ensure that you are connected to the TSQL2012 database.
+--
+-- Write a SELECT statement to retrieve the orderid column from the Sales.Orders table and the total sales amount per orderid. (Hint: Multiply the qty and unitprice columns from the Sales.OrderDetails table.) Use the alias salesmount for the calculated column. Sort the result by the total sales amount in descending order.
+--
+-- Execute the written statement and compare the results that you got with the desired results shown in the file 62 - Lab Exercise 2 - Task 1 Result.txt.
+---------------------------------------------------------------------
+select o.orderid, o.orderdate,SUM(od.qty*od.unitprice) as salesmount
+from Sales.Orders o
+inner join Sales.OrderDetails od
+on o.orderid = od.orderid 
+group by o.orderid,o.orderdate
+order by salesmount desc
+
+---------------------------------------------------------------------
+-- Task 2
+-- 
+-- Copy the T-SQL statement in task 1 and modify it to include the total number of order lines for each order and the average order line sales amount value within the order. Use the aliases nooforderlines and avgsalesamountperorderline, respectively.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 63 - Lab Exercise 2 - Task 2 Result.txt. 
+---------------------------------------------------------------------
+select 
+ o.orderid
+ ,o.orderdate
+ ,SUM(od.qty*od.unitprice) as salesmount
+ ,COUNT(*) AS noofoderlines
+ ,AVG(od.qty*od.unitprice) as avgsalesamountperorderline
+from Sales.Orders o
+inner join Sales.OrderDetails od
+on o.orderid = od.orderid 
+group by o.orderid,o.orderdate
+ORDER BY salesmount DESC;
+
+
+
+---------------------------------------------------------------------
+-- Task 3
+-- 
+-- Write a select statement to retrieve the total sales amount for each month. The SELECT clause should include a calculated column named yearmonthno (YYYYMM notation) based on the orderdate column in the Sales.Orders table and a total sales amount (multiply the qty and unitprice columns from the Sales.OrderDetails table). Order the result by the yearmonthno calculated column.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 64 - Lab Exercise 2 - Task 3 Result.txt.
+---------------------------------------------------------------------
+select 
+ CONVERT(nvarchar(6), o.orderdate, 112) as yearmonthno
+ ,SUM(od.qty*od.unitprice) as saleamountpermonth
+from Sales.Orders o
+inner join Sales.OrderDetails od
+on o.orderid = od.orderid 
+group by CONVERT(nvarchar(6), o.orderdate, 112)
+ORDER BY yearmonthno ASC;
+
+
+---------------------------------------------------------------------
+-- Task 4
+-- 
+-- Write a select statement to retrieve all the customers (including those that did not place any orders) and their total sales amount, maximum sales amount per order line, and number of order lines. 
+--
+-- The SELECT clause should include the custid and contactname columns from the Sales.Customers table and four calculated columns based on appropriate aggregate functions:
+--  totalsalesamount, representing the total sales amount per order
+--  maxsalesamountperorderline, representing the maximum sales amount per order line
+--  numberofrows, representing the number of rows (use * in the COUNT function)
+--  numberoforderlines, representing the number of order lines (use the orderid column in the COUNT function)
+--
+-- Order the result by the totalsalesamount column.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 65 - Lab Exercise 2 - Task 4 Result.txt. 
+--
+-- Notice that the custid 22 and 57 rows have a NULL in the columns with the SUM and MAX aggregate functions. What are their values in the COUNT columns? Why are they different?
+---------------------------------------------------------------------
+select 
+ c.custid
+ ,c.contactname
+ ,SUM(od.qty*od.unitprice) as totalsalesamount
+ ,MAX(od.qty*od.unitprice) as maxsalesamountperorderline
+ ,count(*) as numberofrows
+ ,count(o.orderid) as numberoforderlines
+from Sales.Customers c
+left join Sales.Orders o
+on o.custid = c.custid
+left join Sales.OrderDetails od
+on o.orderid = od.orderid
+group by c.custid,c.contactname
+order by  totalsalesamount  asc
+
+-- LAB 09
+--
+-- Exercise 3
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+-- Task 1
+-- 
+-- Open the project file F:\10774A_Labs\10774A_09_PRJ\10774A_09_PRJ.ssmssln and the T-SQL script 71 - Lab Exercise 3.sql. Ensure that you are connected to the TSQL2012 database.
+--
+-- A junior analyst prepared a T-SQL statement to retrieve the number of orders and the number of customers for each order year. Observe the provided T-SQL statement and execute it:
+--
+-- Observe the result and notice that the number of orders is the same as the number of customers. Why?
+--
+-- Correct the T-SQL statement to show the correct number of customers that placed an order for each year.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 72 - Lab Exercise 3 - Task 1 Result.txt. 
+---------------------------------------------------------------------
+
+SELECT
+	--COUNT(custid) AS noofcustomers
+ YEAR(orderdate) AS orderyear, 
+ COUNT(orderid) AS nooforders, 
+ count(distinct(custid)) AS noofcustomers
+FROM Sales.Orders 
+GROUP BY YEAR(orderdate);
+
+---------------------------------------------------------------------
+-- Task 2
+-- 
+-- Write a SELECT statement to retrieve the number of customers based on the first letter of the values in the contactname column from the Sales.Customers table. Add an additional column to show the total number of orders placed by each group of customers. Use the aliases firstletter, noofcustomers and nooforders. Order the result by the firstletter column.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 73 - Lab Exercise 3 - Task 2 Result.txt.
+---------------------------------------------------------------------
+select 
+ SUBSTRING(c.contactname,1,1) as firstletter
+ ,COUNT(distinct c.custid) as noofcustomers
+ ,COUNT(o.orderid) as nooforders
+from Sales.Customers c
+left join Sales.Orders o
+on c.custid = o.custid
+group by SUBSTRING(c.contactname,1,1)
+order by firstletter asc
+---------------------------------------------------------------------
+-- Task 3
+-- 
+-- Copy the T-SQL statement in exercise 1, task 4, and modify to include the following information about for each product category: total sales amount, number of orders, and average sales amount per order. Use the aliases totalsalesamount, nooforders, and avgsalesamountperorder, respectively.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 74 - Lab Exercise 3 - Task 3 Result.txt. 
+---------------------------------------------------------------------
+
+
+select
+c.categoryid,c.categoryname
+ ,SUM(od.unitprice*od.qty) as totalsalesamount
+ ,COUNT(distinct od.orderid) as nooforders
+ ,avg(od.unitprice*od.qty) as avgsalesamountperorder
+from Production.Categories c
+left join Production.Products p
+on c.categoryid = p.categoryid
+inner join Sales.OrderDetails od
+on p.productid = od.productid
+inner join Sales.Orders o
+on o.orderid = od.orderid
+where YEAR(o.orderdate) = '2008'
+group by c.categoryname,c.categoryid
+ORDER BY c.categoryid
+
+-- LAB 09
+--
+-- Exercise 4
+---------------------------------------------------------------------
+
+---------------------------------------------------------------------
+-- Task 1
+-- 
+-- Open the project file F:\10774A_Labs\10774A_09_PRJ\10774A_09_PRJ.ssmssln and the T-SQL script 81 - Lab Exercise 4.sql. Ensure that you are connected to the TSQL2012 database.
+--
+-- Write a SELECT statement to retrieve the top 10 customers by total sales amount that spent more than $10,000 in terms of sales amount. Display the custid column from the Orders table and a calculated column that contains the total sales amount based on the qty and unitprice columns from the Sales.OrderDetails table. Use the alias totalsalesamount for the calculated column.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 82 - Lab Exercise 4 - Task 1 Result.txt. 
+---------------------------------------------------------------------
+select top 10 o.custid,SUM(od.unitprice*od.qty) as totalsalesamount
+from Sales.Orders o
+inner join Sales.OrderDetails od
+on o.orderid = od.orderid
+group by o.custid
+having SUM(od.unitprice*od.qty) > 10000
+order by totalsalesamount desc
+
+
+---------------------------------------------------------------------
+-- Task 2
+-- 
+-- Write a SELECT statement against the Sales.Orders and Sales.OrderDetails tables and display the empid column and a calculated column representing the total sales amount. Filter the result to group only the rows with an order year 2008.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 83 - Lab Exercise 4 - Task 2 Result.txt. 
+---------------------------------------------------------------------
+select o.orderid, o.empid, SUM(od.unitprice*od.qty) as totalsalesamount
+from Sales.Orders o
+inner join Sales.OrderDetails od
+on o.orderid = od.orderid
+where YEAR(o.orderdate) = 2008
+group by o.orderid,o.empid
+
+
+---------------------------------------------------------------------
+-- Task 3
+-- 
+-- Copy the T-SQL statement in task 2 and modify it to apply an additional filter to retrieve only the rows that have a sales amount higher than $10,000.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 84 - Lab Exercise 4 - Task 3_1 Result.txt.
+--
+-- Apply an additional filter to show only employees with empid equal number 3.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 85 - Lab Exercise 4 - Task 3_2 Result.txt.
+--
+-- Did you apply the predicate logic in the WHERE or in the HAVING clause? Which do you think is better? Why?
+---------------------------------------------------------------------
+--Add having
+select o.orderid, o.empid, SUM(od.unitprice*od.qty) as totalsalesamount
+from Sales.Orders o
+inner join Sales.OrderDetails od
+on o.orderid = od.orderid
+where YEAR(o.orderdate) = 2008
+group by o.orderid,o.empid
+having SUM(od.unitprice*od.qty) >= 10000
+
+
+--Add predicate
+select o.orderid, o.empid, SUM(od.unitprice*od.qty) as totalsalesamount
+from Sales.Orders o
+inner join Sales.OrderDetails od
+on o.orderid = od.orderid
+where YEAR(o.orderdate) = 2008 and o.empid = 3
+group by o.orderid,o.empid
+having SUM(od.unitprice*od.qty) >= 10000
+
+
+---------------------------------------------------------------------
+-- Task 4
+-- 
+-- Write a SELECT statement to retrieve all customers who placed more than 25 orders and add information about the date of the last order and the total sales amount. Display the custid column from the Sales.Orders table and two calculated columns: lastorderdate based on the orderdate column and totalsalesamount based on the qty and unitprice columns in the Sales.OrderDetails table.
+--
+-- Execute the written statement and compare the results that you got with the recommended result shown in the file 86 - Lab Exercise 4 - Task 4 Result.txt.
+---------------------------------------------------------------------
+select o.custid
+ ,MAX(o.orderdate) as lastorderdate
+ ,SUM(od.unitprice*od.qty) as totalsalesamount
+-- ,COUNT(distinct o.orderid)
+from Sales.Orders o
+inner join Sales.OrderDetails od
+on o.orderid = od.orderid
+group by o.custid
+having COUNT(distinct o.orderid) > 25
+order by lastorderdate
